@@ -6,12 +6,12 @@ import random
 command = None
 condition = threading.Condition()
 
-# Список живих робітників
-alive_workers = []
+# Список робітників
+workers = []
 
 # Робітник
 def worker(worker_id):
-    global command, alive_workers
+    global command, workers
     while True:
         condition.acquire()
         try:
@@ -25,17 +25,17 @@ def worker(worker_id):
             condition.release()  # звільняємо лок після пробудження
         time.sleep(0.5)  # симуляція роботи
     # Робітник завершує роботу — видаляємо його зі списку
-    alive_workers.remove(threading.current_thread())
+    workers.remove(threading.current_thread())
 
 # Диспетчер
 def dispatcher():
-    global command, alive_workers
+    global command, workers
     commands = ["load", "process", "shutdown"]
     while True:
         time.sleep(5)
         condition.acquire()
         try:
-            if not alive_workers:
+            if not workers:
                 print("Dispatcher: всі робітники завершили роботу. Завершення диспетчера.")
                 break
             command = random.choice(commands)
@@ -49,7 +49,7 @@ num_workers = 3
 threads = []
 for i in range(num_workers):
     t = threading.Thread(target=worker, args=(i+1,))
-    alive_workers.append(t)
+    workers.append(t)
     t.start()
     threads.append(t)
 
